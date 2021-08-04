@@ -31,12 +31,26 @@ class SparseDendritesPlasticity:
     """
     Implement plasticity on sparse dendrite segments.
 
-    1. Get dendrite weights values
+    1. Get dendrites weights values
     2. Calculate threshold to stay at defined sparsity
-    3. If weight < 200% threshold --> reset to 0 , else do nothing. This new_threshold
-    can be adjusted and depends on step 6. The more new weights, the more pruning.
-    4. Set zero weights to non-zero randomly. Match defined sparsity
+    3. If weight < X% threshold --> reset to 0 , else do nothing. This X %
+    can be adjusted and is dependent on how many new weights are initialized.
+    The more new weights, the more pruning and the higher this threshold. As an
+    example, having 50% new weights means we have set the threshold a 200%.
+    4. Set zero weights to non-zero randomly. Match defined sparsity using this
+    number and the step 3 threshold.
     5. Iterate every X epochs
+
+
+
+    Example config:
+    ```
+    config=dict(
+        sparse_dendrites=dict(
+            plasticity_update=1,
+            percent_new_weights=50,
+        )
+    )
     """
 
     def setup_experiment(self, config):
@@ -50,19 +64,23 @@ class SparseDendritesPlasticity:
                                values during plasticity update
         """
         super().setup_experiment(config)
-        self.plasticity_update = config.get("plasticity_update", 1)
-        self.percent_new_weights = config.get("percent_new_weights", 50)
+        sparse_dendrites = config.get("sparse_dendrites", {})
+        self.plasticity_update = sparse_dendrites.get("plasticity_update", 1)
+        self.percent_new_weights = sparse_dendrites.get("percent_new_weights", 50)
+
+        # TODO is this the best way to access the config file parameters ?
+        model_args = config.get("model_args")
+        self.sparsity = model_args.get("dendrite_weight_sparsity")
+        dataset_args = config.get("dataset_args")
+        self.epochs = dataset_args.get("epochs")
 
     def run_task(self):
         ret = super().run_task()
-
-        # TODO is that the good way to extract config file parameter ? I need sparsity level, total number of epochs
         epochs_to_update = torch.linspace(0, self.epochs, self.plasticity_update)
         if self.epoch in epochs_to_update:
             self.weights = self.model.parameters()
-            # TODO : update functions arguments
-            self.prune_weights()
-            self.grow_weights()
+            self.prune_weights(self.weights, self.sparsity)
+            self.grow_weights(self.weights, self.percent_new_weights)
         return ret
 
     def prune_weights(self, weights, sparsity_level):
@@ -76,3 +94,15 @@ class SparseDendritesPlasticity:
         # TODO choose new weights to update respecting percent_new_weights and sparsity parameters
         # TODO update to non-zeros using the standard initialization schema
         pass
+
+    def init_sparse_weights(m, input_sparsity):
+        """
+        Modified Kaiming weight initialization that considers input sparsity and weight
+        sparsity.
+        """
+        input_density = 1.0 - input_sparsity
+        weight_density = 1.0 - m.sparsity
+        _, fan_in = m.module.weight.size()
+        bound = 1.0 / np.sqrt(input_density * weight_density * fan_in)
+        nn.init.uniform_(m.module.weight, -bound, bound)
+        m.apply(rezero_weights)
