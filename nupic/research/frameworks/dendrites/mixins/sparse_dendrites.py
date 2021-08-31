@@ -33,11 +33,13 @@ class SparseDendritesPlasticity:
 
     1. Get dendrites weights values
 
-    2. Calculate threshold to stay at defined sparsity !!! use absolute value to consider negative weights !!!
+    2. Calculate threshold to stay at defined sparsity.
+        Need to use absolute value to consider negative weights.
     Example :
     80% target sparsity
     50% weights renewal
-    threshold = 80% * 50% ==> keep the highest 40% weights and renew another 40%
+    threshold = 80% * 50%
+        ==> keep the highest 40% weights and renew another 40%
 
     3. If weight < X% threshold --> reset to 0 , else do nothing. This X %
     can be adjusted and is dependent on how many new weights are initialized.
@@ -60,12 +62,12 @@ class SparseDendritesPlasticity:
     """
 
     def setup_experiment(self, config):
-
         """
         Add following variables to config
 
         :param config: Dictionary containing the configuration parameters
-        - plasticity_update: number of epochs between weights pruning/growing update.
+        - plasticity_update: number of epochs between weights pruning/growing
+                             update.
         - percent_new_weights: percentage of zero weights updated to non-zero
                                values during plasticity update
         """
