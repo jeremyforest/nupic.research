@@ -66,33 +66,36 @@ class SparseDendritesPlasticity:
         Add following variables to config
 
         :param config: Dictionary containing the configuration parameters
-        - plasticity_update: number of epochs between weights pruning/growing
-                             update.
-        - percent_new_weights: percentage of zero weights updated to non-zero
-                               values during plasticity update
+        - pruning_percentage: percent of weight to prune
+        # - plasticity_update: number of epochs between weights pruning/growing
+        #                      update.
+        # - percent_new_weights: percentage of zero weights updated to non-zero
+        #                        values during plasticity update
         """
         super().setup_experiment(config)
         sparse_dendrites = config.get("sparse_dendrites", {})
-        self.plasticity_update = sparse_dendrites.get("plasticity_update", 1)
-        self.percent_new_weights = sparse_dendrites.get(
-            "percent_new_weights", 50
+        self.pruning_percentage = pruning_percentage.get("pruning_percentage",
+                                                         0)
+        # self.plasticity_update = sparse_dendrites.get("plasticity_update", 1)
+        # self.percent_new_weights = sparse_dendrites.get(
+        #     "percent_new_weights", 50
         )
 
         # TODO is this the best way to access the config file parameters ?
         # TODO use the dendrite model directly !
-        model_args = config.get("model_args")
-        self.sparsity = model_args.get("dendrite_weight_sparsity")
-        dataset_args = config.get("dataset_args")
-        self.epochs = dataset_args.get("epochs")
+        model_args=config.get("model_args")
+        self.sparsity=model_args.get("dendrite_weight_sparsity")
+        dataset_args=config.get("dataset_args")
+        self.epochs=dataset_args.get("epochs")
 
     def run_task(self):
-        ret = super().run_task()
-        epochs_to_update = torch.linspace(
+        ret=super().run_task()
+        epochs_to_update=torch.linspace(
             0, self.epochs, self.plasticity_update
         )
         if self.epoch in epochs_to_update:
-            self.weights = self.model.parameters()
-            self.weights = self.prune_weights(
+            self.weights=self.model.parameters()
+            self.weights=self.prune_weights(
                 self.weights, self.sparsity, self.percent_new_weights
             )
             self.weights = self.grow_weights(
