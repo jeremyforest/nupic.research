@@ -60,6 +60,8 @@ class DendriteSegments(torch.nn.Module, HasRezeroWeights):
         self.num_segments = num_segments
         self.dim_context = dim_context
         self.sparsity = sparsity
+        self._target_density = 1 - self.sparsity
+        self.current_timestep = 0
 
         # TODO: Use named dimensions.
         weights = torch.Tensor(num_units, num_segments, dim_context)

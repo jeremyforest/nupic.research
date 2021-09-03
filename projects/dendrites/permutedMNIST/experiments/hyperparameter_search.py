@@ -44,6 +44,7 @@ from nupic.research.frameworks.vernon import mixins
 
 
 class NbSegmentSearchExperiment(
+    mixins.PruneLowMagnitude,
     mixins.RezeroWeights,
     mixins.CentroidContext,
     mixins.PermutedMNISTTaskIndices,
@@ -109,6 +110,10 @@ W_SPARSITY_SEARCH["model_args"].update(num_segments=10, kw_percent_on=0.1)
 
 # test config for 10 tasks
 TEST = deepcopy(BASE10)
+TEST.update(prune_schedule=[[0, 1.], [1, 1.], [2, 1.]])
+TEST.update(prune_curve_shape='exponential')
+TEST.update(validate_on_prune=False)
+
 TEST["model_args"].update(
     kw_percent_on=0.1, weight_sparsity=0.5, num_segments=2
 )

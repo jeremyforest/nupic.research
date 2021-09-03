@@ -33,6 +33,7 @@ class PruneLowMagnitude:
     Each module of type PrunableSparseWeightBase will be pruned. Each of these
     modules must have attribute "_target_density".
     """
+
     def setup_experiment(self, config):
         """
         :param config:
@@ -57,23 +58,33 @@ class PruneLowMagnitude:
         if self.current_epoch in self.prune_schedule:
             prune_progress = self.prune_schedule[self.current_epoch]
 
-            for module in self.model.modules():
-                if isinstance(module, PrunableSparseWeightBase):
-                    if self.prune_curve_shape == "exponential":
-                        density = module._target_density ** prune_progress
-                    elif self.prune_curve_shape == "linear":
-                        density = 1 - (
-                            (1 - module._target_density) * prune_progress
-                        )
+        # for name, param in self.model.named_parameters():
+        #     if "segment" in name:
 
-                    mag = module.module.weight.detach().abs().view(-1)
-                    on_indices = mag.topk(math.floor(mag.numel() * density))[1]
-                    off_mask = torch.ones(module.zero_mask.shape,
-                                          device=module.zero_mask.device,
-                                          dtype=torch.bool)
-                    off_mask.view(-1)[on_indices] = 0
-                    module.off_mask = off_mask
-                    module.rezero_weights()
+        # module._modules['segments']
+        for module in self.model.modules():
+            print(module)
+            if 'segments' in module._modules.keys():
+                # import pdb
+                # pdb.set_trace()
+                print(module._modules)
+                # if isinstance(module, PrunableSparseWeightBase):
+                if self.prune_curve_shape == "exponential":
+                    density = (
+                        1 - module._modules['segments'].sparsity) ** prune_progress
+                elif self.prune_curve_shape == "linear":
+                    density = 1 - (
+                        (1 - module._target_density) * prune_progress
+                    )
+
+                mag = module.module.weight.detach().abs().view(-1)
+                on_indices = mag.topk(math.floor(mag.numel() * density))[1]
+                off_mask = torch.ones(module.zero_mask.shape,
+                                      device=module.zero_mask.device,
+                                      dtype=torch.bool)
+                off_mask.view(-1)[on_indices] = 0
+                module.off_mask = off_mask
+                module.rezero_weights()
 
             self.current_timestep += 1
 
