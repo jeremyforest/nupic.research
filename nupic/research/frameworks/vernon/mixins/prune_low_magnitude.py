@@ -63,11 +63,11 @@ class PruneLowMagnitude:
 
         # module._modules['segments']
         for module in self.model.modules():
-            print(module)
+            # print(module)
             if 'segments' in module._modules.keys():
                 # import pdb
                 # pdb.set_trace()
-                print(module._modules)
+                # print(module._modules)
                 # if isinstance(module, PrunableSparseWeightBase):
                 if self.prune_curve_shape == "exponential":
                     density = (
@@ -76,6 +76,7 @@ class PruneLowMagnitude:
                     density = 1 - (
                         (1 - module._target_density) * prune_progress
                     )
+                print(density)
 
                 mag = module.module.weight.detach().abs().view(-1)
                 on_indices = mag.topk(math.floor(mag.numel() * density))[1]
@@ -86,13 +87,13 @@ class PruneLowMagnitude:
                 module.off_mask = off_mask
                 module.rezero_weights()
 
-            self.current_timestep += 1
+            # self.current_timestep += 1
 
-            if self.validate_on_prune:
-                result = self.validate()
-                self.extra_val_results.append(
-                    (self.current_timestep, result)
-                )
+            # if self.validate_on_prune:
+            #     result = self.validate()
+            #     self.extra_val_results.append(
+            #         (self.current_timestep, result)
+            #     )
 
     @classmethod
     def get_execution_order(cls):
