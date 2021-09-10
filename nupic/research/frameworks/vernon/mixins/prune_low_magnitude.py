@@ -58,17 +58,8 @@ class PruneLowMagnitude:
         if self.current_epoch in self.prune_schedule:
             prune_progress = self.prune_schedule[self.current_epoch]
 
-        # for name, param in self.model.named_parameters():
-        #     if "segment" in name:
-
-        # module._modules['segments']
         for module in self.model.modules():
-            # print(module)
             if 'segments' in module._modules.keys():
-                # import pdb
-                # pdb.set_trace()
-                # print(module._modules)
-                # if isinstance(module, PrunableSparseWeightBase):
                 if self.prune_curve_shape == "exponential":
                     density = (
                         1 - module._modules['segments'].sparsity) ** prune_progress
@@ -87,13 +78,13 @@ class PruneLowMagnitude:
                 module.off_mask = off_mask
                 module.rezero_weights()
 
-            # self.current_timestep += 1
+            self.current_timestep += 1
 
-            # if self.validate_on_prune:
-            #     result = self.validate()
-            #     self.extra_val_results.append(
-            #         (self.current_timestep, result)
-            #     )
+            if self.validate_on_prune:
+                result = self.validate()
+                self.extra_val_results.append(
+                    (self.current_timestep, result)
+                )
 
     @classmethod
     def get_execution_order(cls):

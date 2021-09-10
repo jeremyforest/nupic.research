@@ -26,6 +26,7 @@ from .constrain_parameters import ConstrainParameters
 from .context_signal import *
 from .cutmix import CutMix, CutMixKnowledgeDistillation
 from .delay_load_checkpoint import *
+from .dendrites_weights_visual import DendritesWeightsVisual
 from .dendrite_metrics import *
 from .ewc import ElasticWeightConsolidation
 from .export_model import ExportModel

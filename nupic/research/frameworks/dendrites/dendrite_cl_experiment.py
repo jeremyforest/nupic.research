@@ -39,6 +39,7 @@ class DendriteContinualLearningExperiment(ContinualLearningExperiment):
         self.context_vector = None
         self.train_context_fn = None
         self.infer_context_fn = None
+        self.current_timestep = 0
 
     def run_task(self):
         """
@@ -52,7 +53,8 @@ class DendriteContinualLearningExperiment(ContinualLearningExperiment):
         # TODO: return the results from run_epoch
         self.current_epoch = 0
         for e in range(self.epochs):
-            self.logger.info("Training task %d, epoch %d...", self.current_task, e)
+            self.logger.info("Training task %d, epoch %d...",
+                             self.current_task, e)
             self.run_epoch()
 
         # TODO: put back evaluation_metrics from cl_experiment
