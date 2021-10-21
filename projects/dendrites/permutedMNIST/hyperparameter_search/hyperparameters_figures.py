@@ -57,6 +57,7 @@ def hyperparameter_search_panel():
     df_path3_50 = f"{experiment_folder}w_sparsity_search_50_lasttask.csv"
     df3_50 = pd.read_csv(df_path3_50)
 
+    # isolating only what needs for plots
     relevant_columns = ["Activation sparsity", "FF weight sparsity", "Num segments",
                         "Accuracy"]
 
@@ -67,50 +68,45 @@ def hyperparameter_search_panel():
     df2_50 = df2_50[relevant_columns]
     df3_50 = df3_50[relevant_columns]
 
-    # Figure 1 'Impact of the different hyperparameters on performance
-    # full cross product of hyperparameters
-    gs = gridspec.GridSpec(2, 3)
-    fig = plt.figure(figsize=(14, 10))
+    # aggregating data
+    df1_summary = df1.groupby(
+        ["Activation sparsity", "FF weight sparsity", "Num segments"], as_index=False).mean()
+    df2_summary = df2.groupby(
+        ["Activation sparsity", "FF weight sparsity", "Num segments"], as_index=False).mean()
+    df3_summary = df3.groupby(
+        ["Activation sparsity", "FF weight sparsity", "Num segments"], as_index=False).mean()
 
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax2 = fig.add_subplot(gs[0, 1])
-    ax3 = fig.add_subplot(gs[0, 2])
-    ax1_50 = fig.add_subplot(gs[1, 0])
-    ax2_50 = fig.add_subplot(gs[1, 1])
-    ax3_50 = fig.add_subplot(gs[1, 2])
+    df1_50_summary = df1_50.groupby(
+        ["Activation sparsity", "FF weight sparsity", "Num segments"], as_index=False).mean()
+    df2_50_summary = df2_50.groupby(
+        ["Activation sparsity", "FF weight sparsity", "Num segments"], as_index=False).mean()
+    df3_50_summary = df3_50.groupby(
+        ["Activation sparsity", "FF weight sparsity", "Num segments"], as_index=False).mean()
 
-    x1 = "Num segments"
-    x2 = "Activation sparsity"
-    x3 = "FF weight sparsity"
+    fig, ((ax1, ax2, ax3), (ax1_50, ax2_50, ax3_50)) = plt.subplots(
+        nrows=2, ncols=3, figsize=(14, 10))
 
-    y = "Accuracy"
-    ort = "v"
-    pal = sns.color_palette(n_colors=6)
-    sigma = 0.2
-    fig.suptitle(
-        "Impact of the different hyperparameters on performance", fontsize=12
-    )
+    ax1.plot(df1_summary["Num segments"],
+             df1_summary['Accuracy'], '-s', c="grey")
+    ax2.plot(df2_summary["Activation sparsity"],
+             df2_summary['Accuracy'], '-s', c="grey")
+    ax3.plot(df3_summary["FF weight sparsity"],
+             df3_summary['Accuracy'], '-s', c="grey")
 
-    pt.RainCloud(x=x1, y=y, data=df1, palette=pal, bw=sigma, width_viol=0.6, ax=ax1,
-                 orient=ort, move=0.2, pointplot=True, alpha=0.65)
-    pt.RainCloud(x=x1, y=y, data=df1_50, palette=pal, bw=sigma, width_viol=0.6,
-                 ax=ax1_50, orient=ort, move=0.2, pointplot=True, alpha=0.65)
-    pt.RainCloud(x=x2, y=y, data=df2, palette=pal, bw=sigma, width_viol=0.6, ax=ax2,
-                 orient=ort, move=0.2, pointplot=True, alpha=0.65)
-    pt.RainCloud(x=x2, y=y, data=df2_50, palette=pal, bw=sigma, width_viol=0.6,
-                 ax=ax2_50, orient=ort, move=0.2, pointplot=True, alpha=0.65)
-    pt.RainCloud(x=x3, y=y, data=df3, palette=pal, bw=sigma, width_viol=0.6, ax=ax3,
-                 orient=ort, move=0.2, pointplot=True, alpha=0.65)
-    pt.RainCloud(x=x3, y=y, data=df3_50, palette=pal, bw=sigma, width_viol=0.6,
-                 ax=ax3_50, orient=ort, move=0.2, pointplot=True, alpha=0.65)
-    ax1.set_ylabel("Mean accuracy", fontsize=16)
+    ax1_50.plot(df1_50_summary["Num segments"],
+                df1_50_summary['Accuracy'], '-s', c="grey")
+    ax2_50.plot(df2_50_summary["Activation sparsity"],
+                df2_50_summary['Accuracy'], '-s', c="grey")
+    ax3_50.plot(df3_50_summary["FF weight sparsity"],
+                df3_50_summary['Accuracy'], '-s', c="grey")
+
+    ax1.set_ylabel("Test accuracy", fontsize=16)
     ax1.set_xlabel("Number of dendritic segments", fontsize=16)
-    ax1_50.set_ylabel("Mean accuracy", fontsize=16)
+    ax1_50.set_ylabel("Test accuracy", fontsize=16)
     ax1_50.set_xlabel("Number of dendritic segments", fontsize=16)
 
     ax2.set(ylabel="")
     ax2.set_xlabel("Activation density", fontsize=16)
-
     ax2_50.set(ylabel="")
     ax2_50.set_xlabel("Activation density", fontsize=16)
 
@@ -119,18 +115,18 @@ def hyperparameter_search_panel():
     ax3_50.set(ylabel="")
     ax3_50.set_xlabel("FF Weight density", fontsize=16)
 
-    # Add 10 tasks and 50 tasks labels on the left
-    plt.figtext(-0.02, 0.7, "10 TASKS", fontsize=16)
-    plt.figtext(-0.02, 0.28, "50 TASKS", fontsize=16)
+    ax1.set_ylim([0.35, 1.0])
+    ax2.set_ylim([0.35, 1.0])
+    ax3.set_ylim([0.35, 1.0])
+    ax1_50.set_ylim([0.35, 1.0])
+    ax2_50.set_ylim([0.35, 1.0])
+    ax2_50.set_xlim([0.0, 1.0])
+    ax3_50.set_ylim([0.35, 1.0])
 
-    fig.suptitle(
-        """Impact of different hyperparameters on \n 10-tasks and 50-tasks
-        permuted MNIST performance""",
-        fontsize=16,
-    )
     if savefigs:
         plt.savefig(
-            f"{figs_dir}/hyperparameter_search_panel.png", bbox_inches="tight"
+            f"{figs_dir}/hyperparameter_search_panel.png", bbox_inches="tight",
+            dpi=80
         )
 
 
