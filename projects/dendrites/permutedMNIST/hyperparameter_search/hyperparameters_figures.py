@@ -84,21 +84,21 @@ def hyperparameter_search_panel():
         ["Activation sparsity", "FF weight sparsity", "Num segments"], as_index=False).mean()
 
     fig, ((ax1, ax2, ax3), (ax1_50, ax2_50, ax3_50)) = plt.subplots(
-        nrows=2, ncols=3, figsize=(14, 10))
+        nrows=2, ncols=3, figsize=(24, 10))
 
     ax1.plot(df1_summary["Num segments"],
-             df1_summary['Accuracy'], '-s', c="grey")
+             df1_summary['Accuracy'], '-s', c="lightsteelblue")
     ax2.plot(df2_summary["Activation sparsity"],
-             df2_summary['Accuracy'], '-s', c="grey")
+             df2_summary['Accuracy'], '-s', c="lightsteelblue")
     ax3.plot(df3_summary["FF weight sparsity"],
-             df3_summary['Accuracy'], '-s', c="grey")
+             df3_summary['Accuracy'], '-s', c="lightsteelblue")
 
     ax1_50.plot(df1_50_summary["Num segments"],
-                df1_50_summary['Accuracy'], '-s', c="grey")
+                df1_50_summary['Accuracy'], '-s', c="lightsteelblue")
     ax2_50.plot(df2_50_summary["Activation sparsity"],
-                df2_50_summary['Accuracy'], '-s', c="grey")
+                df2_50_summary['Accuracy'], '-s', c="lightsteelblue")
     ax3_50.plot(df3_50_summary["FF weight sparsity"],
-                df3_50_summary['Accuracy'], '-s', c="grey")
+                df3_50_summary['Accuracy'], '-s', c="lightsteelblue")
 
     ax1.set_ylabel("Test accuracy", fontsize=16)
     ax1.set_xlabel("Number of dendritic segments", fontsize=16)
@@ -126,7 +126,7 @@ def hyperparameter_search_panel():
     if savefigs:
         plt.savefig(
             f"{figs_dir}/hyperparameter_search_panel.png", bbox_inches="tight",
-            dpi=80
+            dpi=300
         )
 
 
